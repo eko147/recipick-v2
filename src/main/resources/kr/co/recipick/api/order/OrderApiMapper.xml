@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.recipick.api.order.OrderApiMapper">
+
+    <select id="getOrderHistory" resultType="kr.co.recipick.api.order.OrderResponseVO">
+    SELECT 
+        DATE_FORMAT(oh.order_date, '%Y-%m-%d') AS orderDateTime, 
+        CASE 
+            WHEN oh.category = 'r' THEN r.title
+            WHEN oh.category = 'i' THEN i.name
+            ELSE 'Unknown'
+        END AS itemName,
+        oh.price
+    FROM 
+        order_history oh
+    LEFT JOIN 
+        recipe r ON oh.category = 'r' AND oh.recipe_id = r.recipe_id
+    LEFT JOIN 
+        ingredient i ON oh.category = 'i' AND oh.ing_id = i.ing_id
+    WHERE 
+        oh.member_id = #{memberId}
+        AND oh.payment_method = 'recipick_card'
+        AND oh.order_state = '결제완료'
+    ORDER BY 
+        oh.order_date DESC
+</select>
+
+
+</mapper>
