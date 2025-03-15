@@ -914,8 +914,7 @@ body {
 	    // 카드 결제 모달에서 결제 버튼 클릭 시
 	    $('#confirmRecipickPayment').on('click', function() {
 	        const cardNumber = $('#recipickCardNumber').val();
-	        /* const cardExpiry = $('#recipickCardExpiry').val(); */
-	        const cardCvv = $('#recipickCardCvv').val();
+	        const cardExpiry = $('#recipickCardExpiry').val();
 	        const usePoints = $('#usePointsCheckbox').is(':checked');
 	        const pointsToUse = usePoints ? parseInt($('#pointsToUse').val()) : 0;
 	        
@@ -933,11 +932,11 @@ body {
 	        const uid = new Date().getTime().toString().substr(-10);
 	        
 	        // 레시픽 카드 결제 API 호출
-	        processRecipickCardPayment(cardNumber, cardExpiry, cardCvv, currentPrice, selectedDeliveryDate, uid, pointsToUse);
+	        processRecipickCardPayment(cardNumber, cardExpiry, currentPrice, selectedDeliveryDate, pointsToUse);
 	    });
 		
 	    
-	    function processRecipickCardPayment(cardNumber, cardExpiry, cardCvv, amount, deliveryDate, merchantUid, pointsToUse) {
+	    function processRecipickCardPayment(cardNumber, cardExpiry, amount, pointsToUse) {
 	        // 로딩 표시 (필요시 구현)
 	        // showLoading();
 	        
@@ -945,11 +944,9 @@ body {
 	        const paymentData = {
 	            cardNumber: cardNumber,
 	            cardExpiry: cardExpiry,
-	            cardCvv: cardCvv,
 	            amount: amount - pointsToUse, // 포인트를 제외한 금액만 카드 결제
 	            pointsToUse: pointsToUse,
-	            orderId: merchantUid,
-	            userId: '${orderer.email}', // 사용자 식별자
+	            userId: '${orderer.memberId}', // 사용자 식별자
 	        };
 	        
 	        // 실제 API 호출을 위한 AJAX 요청
