@@ -759,7 +759,7 @@ body {
 	    } */
 	    
 	    
-	    $('#paymentButton').on('click', function () {
+/* 	    $('#paymentButton').on('click', function () {
 	        const isRecipickCardSelected = $('#recipickCard').is(':checked');
 	        const selectedDeliveryDate = $('#dateTabs .nav-link.active').data('date');
 	        
@@ -771,7 +771,50 @@ body {
 	            handleRegularPayment(selectedDeliveryDate);
 	        }
 	    });
-	    
+ */	    
+ 
+ 
+ 
+//결제 버튼 클릭 이벤트
+ $('#paymentButton').on('click', function () {
+     const isRecipickCardSelected = $('#recipickCard').is(':checked');
+     const selectedDeliveryDate = $('#dateTabs .nav-link.active').data('date');
+     
+     if (isRecipickCardSelected) {
+         // 레시픽 카드 선택 시에만 포인트 정보 요청
+         $.ajax({
+             url: "${pageContext.request.contextPath}/checkout/get-points",
+             type: "POST",
+             beforeSend: function() {
+                 // 로딩 표시 (필요시 구현)
+                 // showLoading();
+             },
+             success: function(response) {
+                 if (response.success) {
+                     // 포인트 정보 업데이트
+                     $('#availablePoints').text(response.points.toLocaleString());
+                     
+                     // 포인트 정보를 가져온 후 결제 모달 표시
+                     $('#recipickCardModal').modal('show');
+                 } else {
+                     console.error("포인트 조회 실패:", response.message);
+                     alert("포인트 정보를 불러올 수 없습니다. 다시 시도해주세요.");
+                 }
+             },
+             error: function(xhr, status, error) {
+                 console.error("포인트 조회 에러:", error);
+                 alert("서버 통신 중 오류가 발생했습니다. 다시 시도해주세요.");
+             },
+             complete: function() {
+                 // 로딩 표시 제거 (필요시 구현)
+                 // hideLoading();
+             }
+         });
+     } else {
+         // 일반 결제 (아임포트)
+         handleRegularPayment(selectedDeliveryDate);
+     }
+ });
 	    
 	    
 	    
@@ -801,9 +844,43 @@ body {
 	    });
 
 	    // 포인트 입력 시 최종 결제 금액 업데이트
-	    $('#pointsToUse').on('input', function() {
-	        updateFinalAmount();
-	    });
+		// 포인트 입력 시 유효성 검사 및 금액 업데이트
+		$('#pointsToUse').on('input', function() {
+		    const points = parseInt($(this).val()) || 0;
+		    const availablePoints = parseInt($('#availablePoints').text().replace(/,/g, ''));
+		    const originalPrice = parseInt($('#totalPrice').text().replace(/[^0-9]/g, ''));
+		    
+		    // 유효성 검사
+		    if (points < 0) {
+		        $(this).val(0);
+		        return;
+		    }
+		    
+		    if (points > availablePoints) {
+		        $(this).val(availablePoints);
+		        return;
+		    }
+		    
+		    if (points > originalPrice) {
+		        $(this).val(originalPrice);
+		        return;
+		    }
+		    
+		    /* // 1,000P 이상, 100P 단위 확인 (1,000P 이상 사용 시)
+		    if (points > 0) {
+		        if (points < 1000) {
+		            $(this).val(0);
+		            return;
+		        }
+		        
+		        if (points % 100 !== 0) {
+		            $(this).val(Math.floor(points / 100) * 100);
+		            return;
+		        }
+		    } */
+		    
+		    updateFinalAmount();
+		});
 
 	    // 최종 결제 금액 업데이트
 	    function updateFinalAmount() {
@@ -830,7 +907,9 @@ body {
 	        const finalAmount = originalAmount - pointsToUse;
 	        $('#finalPaymentAmount').text(formatCurrency(finalAmount));
 	    }
-
+	    
+	    
+	    
 	    
 	    // 카드 결제 모달에서 결제 버튼 클릭 시
 	    $('#confirmRecipickPayment').on('click', function() {
@@ -856,26 +935,64 @@ body {
 	        // 레시픽 카드 결제 API 호출
 	        processRecipickCardPayment(cardNumber, cardExpiry, cardCvv, currentPrice, selectedDeliveryDate, uid, pointsToUse);
 	    });
-
-	    // 레시픽 카드 서비스로 결제 요청하는 함수
+		
+	    
 	    function processRecipickCardPayment(cardNumber, cardExpiry, cardCvv, amount, deliveryDate, merchantUid, pointsToUse) {
-	        // 로딩 표시
-	        showLoading();
+	        // 로딩 표시 (필요시 구현)
+	        // showLoading();
 	        
 	        // 레시픽 카드 API 호출 데이터
 	        const paymentData = {
 	            cardNumber: cardNumber,
 	            cardExpiry: cardExpiry,
 	            cardCvv: cardCvv,
-	            amount: amount,
+	            amount: amount - pointsToUse, // 포인트를 제외한 금액만 카드 결제
 	            pointsToUse: pointsToUse,
 	            orderId: merchantUid,
 	            userId: '${orderer.email}', // 사용자 식별자
 	        };
 	        
-	        // 테스트용 성공 응답 (실제로는 API 호출)
+	        // 실제 API 호출을 위한 AJAX 요청
+	        $.ajax({
+	            url: "${pageContext.request.contextPath}/checkout/process-payment", // 실제 구현 시 이 엔드포인트 필요
+	            type: "POST",
+	            contentType: "application/json",
+	            data: JSON.stringify(paymentData),
+	            success: function(response) {
+	                // hideLoading();
+	                
+	                if (response.success) {
+	                    // 결제 성공 데이터
+	                    const successData = {
+	                        totalPrice: amount,
+	                        deliveryDate: deliveryDate,
+	                        orderDate: new Date().toISOString().split('T')[0],
+	                        paymentMethod: 'recipick_card',
+	                        merchantUid: merchantUid,
+	                        address: `${orderer.address}`,
+	                        orderStatus: '결제완료',
+	                        impUid: response.paymentId || 'recipick_' + merchantUid,
+	                        pointsUsed: pointsToUse,
+	                        pointsEarned: response.pointsEarned || Math.floor((amount - pointsToUse) * 0.02) // 2% 적립
+	                    };
+	                    
+	                    // 주문 성공 처리
+	                    saveOrderAndRedirect(successData);
+	                } else {
+	                    alert('결제 처리 중 오류가 발생했습니다: ' + (response.message || '알 수 없는 오류'));
+	                }
+	            },
+	            error: function(xhr, status, error) {
+	                // hideLoading();
+	                alert('결제 처리 중 오류가 발생했습니다.');
+	                console.error('결제 오류:', error);
+	            }
+	        });
+	        
+	        // 테스트용 코드 (실제 구현 시 제거)
+	        // 아래 코드는 API 엔드포인트가 구현되지 않은 경우 테스트용으로만 사용
 	        setTimeout(function() {
-	            hideLoading();
+	            // hideLoading();
 	            
 	            // 결제 성공 데이터
 	            const successData = {
@@ -888,79 +1005,40 @@ body {
 	                orderStatus: '결제완료',
 	                impUid: 'recipick_' + merchantUid,
 	                pointsUsed: pointsToUse,
-	                pointsEarned: Math.floor(amount * 0.02) // 2% 적립
+	                pointsEarned: Math.floor((amount - pointsToUse) * 0.02) // 2% 적립 (포인트 사용액 제외)
 	            };
 	            
 	            // 주문 성공 처리
 	            saveOrderAndRedirect(successData);
 	        }, 1000);
-	        
-	        /* 실제 API 호출은 아래와 같이 구현
-	        $.ajax({
-	            url: 'https://card-api.recipick.com/api/card/payment/process',
-	            type: 'POST',
-	            contentType: 'application/json',
-	            data: JSON.stringify(paymentData),
-	            success: function(response) {
-	                hideLoading();
-	                
-	                if (response.success) {
-	                    // 결제 성공 데이터
-	                    const successData = {
-	                        totalPrice: amount,
-	                        deliveryDate: deliveryDate,
-	                        orderDate: new Date().toISOString().split('T')[0],
-	                        paymentMethod: 'recipick_card',
-	                        merchantUid: merchantUid,
-	                        address: `${orderer.address}`,
-	                        orderStatus: '결제완료',
-	                        impUid: response.paymentId,
-	                        pointsUsed: pointsToUse,
-	                        pointsEarned: response.pointsEarned
-	                    };
-	                    
-	                    // 주문 성공 처리
-	                    saveOrderAndRedirect(successData);
-	                } else {
-	                    // 결제 실패 처리
-	                    alert('카드 결제 실패: ' + response.message);
-	                }
-	            },
-	            error: function(xhr, status, error) {
-	                hideLoading();
-	                alert('결제 처리 중 오류가 발생했습니다.');
-	                console.error('결제 오류:', error);
-	            }
-	        });
-	        */
 	    }
+	    
 
 	    // 주문 정보 저장 및 리다이렉트
-	    function saveOrderAndRedirect(orderData) {
-	        // 테스트용 성공 로직 (실제로는 API 호출)
-	        console.log('주문 정보 저장:', orderData);
-	        window.location.href = `${pageContext.request.contextPath}/checkout/payment-success?merchantUid=${orderData.merchantUid}`;
-	        
-	        /* 실제 API 호출은 아래와 같이 구현
-	        $.ajax({
-	            url: `${pageContext.request.contextPath}/checkout/success`,
-	            type: 'POST',
-	            contentType: 'application/json',
-	            data: JSON.stringify(orderData),
-	            success: function(response) {
-	                if (response.success) {
-	                    window.location.href = `${pageContext.request.contextPath}/checkout/payment-success?merchantUid=${orderData.merchantUid}`;
-	                } else {
-	                    alert('결제는 성공했으나 주문 저장 중 문제가 발생했습니다.');
-	                }
-	            },
-	            error: function(xhr, status, error) {
-	                alert('서버와 통신 중 에러가 발생했습니다.');
-	                console.error('통신 에러:', error);
-	            }
-	        });
-	        */
-	    }
+// 주문 정보 저장 및 리다이렉트
+function saveOrderAndRedirect(orderData) {
+    // 테스트 환경에서는 콘솔에만 출력
+    console.log('주문 정보 저장:', orderData);
+    
+    // 실제 API 호출로 주문 정보 저장
+    $.ajax({
+        url: `${pageContext.request.contextPath}/checkout/success`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(orderData),
+        success: function(response) {
+            if (response.success) {
+                window.location.href = `${pageContext.request.contextPath}/checkout/payment-success?merchantUid=${orderData.merchantUid}`;
+            } else {
+                alert('결제는 성공했으나 주문 저장 중 문제가 발생했습니다: ' + (response.message || ''));
+            }
+        },
+        error: function(xhr, status, error) {
+            alert('서버와 통신 중 에러가 발생했습니다.');
+            console.error('통신 에러:', error);
+        }
+    });
+}
 	    
 	    // 일반 결제 처리 함수
 	    function handleRegularPayment(selectedDeliveryDate) {

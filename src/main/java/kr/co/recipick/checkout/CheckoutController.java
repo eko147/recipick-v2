@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.RestTemplate;
 
 import kr.co.recipick.cart.CartService;
 import kr.co.recipick.cart.CartVO;
+import kr.co.recipick.external.solpick.SolpickPointService;
 import kr.co.recipick.member.MemberVO;
 
 @Controller
@@ -28,6 +30,9 @@ public class CheckoutController {
 
 	@Autowired
 	private CheckoutService checkoutService;
+	
+//	@Autowired
+//	private SolpickPointService solpickPointService;
 
 	@GetMapping("/shop-checkout")
 	public String shopCheckout(Model model, HttpSession session) {
@@ -191,5 +196,43 @@ public class CheckoutController {
 		}
 		return result;
 	}
+	
+	
+	
+	/*point 조회*/
+	@Autowired
+	private SolpickPointService solpickPointService;
+
+	// 포인트 조회 API 엔드포인트
+	@PostMapping("/checkout/get-points")
+	@ResponseBody
+	public Map<String, Object> getPoints(HttpSession session) {
+	    Map<String, Object> response = new HashMap<>();
+	    
+	    try {
+	        MemberVO login = (MemberVO) session.getAttribute("login");
+	        if (login == null) {
+	            response.put("success", false);
+	            response.put("message", "로그인이 필요합니다.");
+	            return response;
+	        }
+	        
+	        int memberId = login.getMember_id();
+	        
+	        int points = solpickPointService.getUserPoints(memberId);
+	        
+	        response.put("success", true);
+	        response.put("points", points);
+	        
+	        return response;
+	    } catch (Exception e) {
+	        response.put("success", false);
+	        response.put("message", "포인트 조회 중 오류 발생: " + e.getMessage());
+	        return response;
+	    }
+	}
+	
+	
+	
 
 }
