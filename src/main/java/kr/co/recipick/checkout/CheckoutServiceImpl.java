@@ -37,13 +37,15 @@ public class CheckoutServiceImpl implements CheckoutService {
 	private CartService cartService;
 
 	@Override
-	public void createOrder(OrderVO orderHistory, int check) {
+	public int createOrder(OrderVO orderHistory, int check) {
 		// 장바구니 데이터를 가져오는 로직 (필요 시 활용)
 		List<CartVO> cartItems = cartService.getCartItems(orderHistory.getMemberId());
 
 		if (cartItems == null || cartItems.isEmpty()) {
 			throw new IllegalArgumentException("장바구니가 비어 있습니다.");
 		}
+		
+		int lastOrderId = 0;
 
 		for (CartVO cartItem : cartItems) {
 
@@ -63,6 +65,8 @@ public class CheckoutServiceImpl implements CheckoutService {
 
 			checkoutMapper.insertOrderHistory(orderHistory);
 			
+			lastOrderId = orderHistory.getOh_id();
+			
 
 			System.out.println();
 			System.out.println(orderHistory);
@@ -73,6 +77,9 @@ public class CheckoutServiceImpl implements CheckoutService {
 	if (check == 1) {
 		cartMapper.deleteCartByMemberId(orderHistory.getMemberId());
 	}
+	
+	return lastOrderId;
+	
 	}
 
 	@Override

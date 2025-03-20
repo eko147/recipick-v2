@@ -70,4 +70,37 @@ public class SolpickPointApiClient {
 	}
 	
 	
+	public SolpickPointResponseDTO updatePoints(SolpickPointUpdateDTO updateDTO) {
+	    try {
+	        String url = baseUrl + "/api/points/update";
+
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.setContentType(MediaType.APPLICATION_JSON);
+	        
+	        // API 요청 정보 설정
+	        updateDTO.setApiKey(apiKey);
+
+	        HttpEntity<SolpickPointUpdateDTO> requestEntity = new HttpEntity<>(updateDTO, headers);
+
+	        log.info("포인트 업데이트 요청: {}", updateDTO);
+
+	        ResponseEntity<SolpickPointResponseDTO> response = restTemplate.postForEntity(
+	                url,
+	                requestEntity,
+	                SolpickPointResponseDTO.class);
+
+	        log.info("포인트 업데이트 응답: {}", response.getBody());
+
+	        return response.getBody();
+	    } catch (Exception e) {
+	        log.error("포인트 API 호출 오류", e);
+	        
+	        SolpickPointResponseDTO errorResponse = new SolpickPointResponseDTO();
+	        errorResponse.setSuccess(false);
+	        errorResponse.setMessage("솔픽 포인트 API 호출 중 오류 발생: " + e.getMessage());
+	        
+	        return errorResponse;
+	    }
+	}
+	
 }

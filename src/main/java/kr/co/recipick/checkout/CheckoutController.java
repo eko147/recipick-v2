@@ -15,11 +15,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestTemplate;
 
 import kr.co.recipick.cart.CartService;
 import kr.co.recipick.cart.CartVO;
+import kr.co.recipick.external.solpick.SolpickCardService;
 import kr.co.recipick.external.solpick.SolpickPointService;
+import kr.co.recipick.external.solpick.SolpickVerifyCardResponseDTO;
 import kr.co.recipick.member.MemberVO;
 
 @Controller
@@ -31,8 +32,8 @@ public class CheckoutController {
 	@Autowired
 	private CheckoutService checkoutService;
 	
-//	@Autowired
-//	private SolpickPointService solpickPointService;
+	@Autowired
+	private SolpickCardService solpickCardService;
 
 	@GetMapping("/shop-checkout")
 	public String shopCheckout(Model model, HttpSession session) {
@@ -126,10 +127,12 @@ public class CheckoutController {
 			System.out.println("Order Date: " + orderHistory.getOrderDate());
 			System.out.println("Address: " + orderHistory.getAddress());
 
-			checkoutService.createOrder(orderHistory, 1);
+			int orderId = checkoutService.createOrder(orderHistory, 1);
 
 			response.put("success", true);
 			response.put("message", "결제 성공 데이터가 처리되었습니다.");
+			response.put("orderId", orderId);
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			response.put("success", false);
@@ -178,26 +181,48 @@ public class CheckoutController {
 		return response;
 	}
 
-	@PostMapping("/checkout/verify")
+	@PostMapping("/checkout/verify-card")
 	@ResponseBody
-	public Map<String, Object> verifyPayment(@RequestParam("imp_uid") String impUid,
-			@RequestParam("merchant_uid") String merchantUid, @RequestParam("amount") int amount) {
+	public Map<String, Object> verifyCard(@RequestBody Map<String, Object> request, HttpSession session) {
+	    Map<String, Object> response = new HashMap<>();
+	    
+	    
+	    System.out.println("=====================================");
+	    System.out.println("카드 검증 요청 수신: " + request);
+	    System.out.println("=====================================");
 
-		Map<String, Object> result = new HashMap<>();
-		try {
-			// 결제 금액 검증
-			boolean isVerified = checkoutService.verifyPayment(impUid, amount);
-			result.put("verified", isVerified);
-			result.put("message", isVerified ? "결제가 검증되었습니다." : "결제 금액 불일치. 검증 실패.");
-		} catch (Exception e) {
-			e.printStackTrace();
-			result.put("verified", false);
-			result.put("message", "서버 오류: 결제 검증 실패");
-		}
-		return result;
+	    
+	    try {
+	        MemberVO login = (MemberVO) session.getAttribute("login");
+	        if (login == null) {
+	            response.put("success", false);
+	            response.put("message", "로그인이 필요합니다.");
+	            response.put("isValid", false);
+	            return response;
+	        }
+	        
+	        int memberId = login.getMember_id();
+	        String cardNumber = (String) request.get("cardNumber");
+	        String cardExpiry = (String) request.get("cardExpiry");
+	        
+	        // 솔픽 카드 검증 서비스 호출 (포인트 사용량 제외)
+	        SolpickVerifyCardResponseDTO result = solpickCardService.verifyCard(
+	            memberId, cardNumber, cardExpiry
+	        );
+	        
+	        // 솔픽 API 응답을 프론트엔드용 응답으로 변환 (기본 정보만)
+	        response.put("success", result.isSuccess());
+	        response.put("message", result.getMessage());
+	        response.put("isValid", result.isValid());
+	        
+	    } catch (Exception e) {
+	        response.put("success", false);
+	        response.put("message", "서버 오류: " + e.getMessage());
+	        response.put("isValid", false);
+	    }
+	    
+	    return response;
 	}
-	
-	
 	
 	/*point 조회*/
 	@Autowired
@@ -232,6 +257,51 @@ public class CheckoutController {
 	    }
 	}
 	
+	@PostMapping("/checkout/update-points")
+	@ResponseBody
+	public Map<String, Object> updatePoints(@RequestBody Map<String, Object> request, HttpSession session) {
+	    Map<String, Object> response = new HashMap<>();
+	    
+	    try {
+	        MemberVO login = (MemberVO) session.getAttribute("login");
+	        if (login == null) {
+	            response.put("success", false);
+	            response.put("message", "로그인이 필요합니다.");
+	            return response;
+	        }
+	        
+	        int memberId = login.getMember_id();
+	        int orderId = request.get("orderId") != null ? Integer.parseInt(request.get("orderId").toString()) : 0;
+	        int pointsUsed = request.get("pointsUsed") != null ? Integer.parseInt(request.get("pointsUsed").toString()) : 0;
+	        int totalPrice = request.get("totalPrice") != null ? Integer.parseInt(request.get("totalPrice").toString()) : 0;
+	        
+	        
+	        if (orderId <= 0) {
+	            response.put("success", false);
+	            response.put("message", "유효하지 않은 주문 ID입니다.");
+	            return response;
+	        }
+	        
+	        if (pointsUsed <= 0) {
+	            response.put("success", true);
+	            response.put("message", "포인트 사용이 없습니다.");
+	            return response;
+	        }
+	        
+	        // 솔픽 포인트 API 호출
+	        boolean result = solpickPointService.updatePointsUsage(memberId, orderId, pointsUsed, totalPrice);
+	        
+	        response.put("success", result);
+	        response.put("message", result ? "포인트 업데이트 성공" : "포인트 업데이트 실패");
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        response.put("success", false);
+	        response.put("message", "포인트 업데이트 중 오류가 발생했습니다: " + e.getMessage());
+	    }
+	    
+	    return response;
+	}
 	
 	
 

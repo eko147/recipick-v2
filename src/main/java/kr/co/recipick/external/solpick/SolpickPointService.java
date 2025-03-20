@@ -21,4 +21,23 @@ public class SolpickPointService {
             return 0;
         }
     }
+    
+    public boolean updatePointsUsage(int memberId, int orderId, int pointsUsed, int totalPrice) {
+        try {
+            // 솔픽 API 호출을 위한 DTO 생성
+            SolpickPointUpdateDTO updateDTO = new SolpickPointUpdateDTO();
+            updateDTO.setMemberId(memberId);
+            updateDTO.setOrderId(orderId);
+            updateDTO.setPointsUsed(pointsUsed);
+            updateDTO.setTotalPrice(totalPrice);
+            
+            // API 호출
+            SolpickPointResponseDTO response = solpickPointApiClient.updatePoints(updateDTO);
+            
+            return response != null && response.isSuccess();
+        } catch (Exception e) {
+            log.error("포인트 업데이트 오류", e);
+            return false;
+        }
+    }
 }

@@ -12,7 +12,7 @@ public interface CheckoutMapper {
 	OrdererVO getOrdererInfo(int memberId);
 	
 	
-	void insertOrderHistory(OrderVO orderHistory);
+	int insertOrderHistory(OrderVO orderHistory);
 	
 	
 }

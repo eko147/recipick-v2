@@ -6,6 +6,7 @@ public interface CheckoutService {
 
 	boolean verifyPayment(String impUid, int requestedAmount);
 
-	void createOrder(OrderVO orderHistory, int check);
+//	void createOrder(OrderVO orderHistory, int check);
+	int createOrder(OrderVO orderHistory, int check);
 
 }
