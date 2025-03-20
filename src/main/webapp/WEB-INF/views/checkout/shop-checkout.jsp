@@ -2051,7 +2051,6 @@ body {
 	        // 검증 요청 시 모달에 로딩 표시 (필요시 구현)
 	        // showModalLoading();
 	        
-    
 	    $.ajax({
 	        url: "${pageContext.request.contextPath}/checkout/verify-card", // 레시픽 프록시 엔드포인트
 	        type: "POST",
@@ -2248,9 +2247,6 @@ body {
 	        });
 	    }
 	});
- 
-
-
 
 	</script>
 
