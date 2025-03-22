@@ -1338,11 +1338,11 @@ body {
 												</div> -->
 												
 												<!-- 컬러페이 프로모션 카드 - 결제 섹션 상단에 배치 -->
-												<div class="mb-5">
+												<%-- <div class="mb-5">
 												    <div class="card border-0 rounded-4" style="background-color: #f8f3ff;">
 												        <div class="card-body p-4 text-center">
-												        	<%-- <img src="${pageContext.request.contextPath}/images/logo/recipick-logo.svg" alt="쏠픽" height="28" class="me-1"> 
-												            <h5 class="card-title mb-2">카드로 결제하고</h5> --%>
+												        	<img src="${pageContext.request.contextPath}/images/logo/recipick-logo.svg" alt="쏠픽" height="28" class="me-1"> 
+												            <h5 class="card-title mb-2">카드로 결제하고</h5>
 												            <h5 class="card-title mb-2">
 												                <span class="d-inline-flex align-items-center">
 												                	<img src="${pageContext.request.contextPath}/images/logo/shinhan.png" alt="신한" height="24" class="me-1">
@@ -1362,12 +1362,12 @@ body {
 												            </div>
 												        </div>
 												    </div>
-												</div>
+												</div> --%>
 												<!-- 레시픽 카드 결제 옵션 -->
-												<div class="card card-bordered shadow-none mb-2">
+												<%-- <div class="card card-bordered shadow-none mb-2">
 												    <!-- card body -->
-												    <div class="card-body p-6" style="background-color: #f8f3ff; border-left: 5px solid #9758d9;">
-												        <div class="d-flex">
+												     <div class="card-body p-6" style="background-color: #f8f3ff; border-left: 5px solid #9758d9;">
+        												<div class="d-flex">
 												            <div class="form-check">
 												                <!-- input -->
 												                <input class="form-check-input" type="radio" name="flexRadioDefault" id="recipickCard" /> 
@@ -1386,8 +1386,51 @@ body {
 												            </div>
 												        </div>
 												    </div>
-												</div>
+												</div> --%>
 												
+												
+    <!-- <div class="card card-bordered shadow-none mb-2">
+    card body
+    <div class="card-body p-6" style="background-color: #fff3e6; border-left: 5px solid #ff7f50;">
+        <div class="d-flex">
+            <div class="form-check">
+                input
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="recipickCard" /> 
+                <label class="form-check-label ms-2" for="recipickCard"></label>
+            </div>
+            <div>
+                <div class="d-flex align-items-center">
+                    <div class="me-2">
+                        <h5 class="mb-1 h6">레시픽 카드</h5>
+                    </div>
+                </div>
+                <p class="mb-0 small text-warning">포인트 적립 혜택을 받아보세요!</p>
+                <div class="mt-2">
+                    <span class="badge bg-warning text-dark">5,280원 추가 적립</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> -->											
+
+
+<div class="card card-bordered shadow-none mb-2">
+    <!-- card body -->
+    <div class="card-body p-6" style="background-color: #fff3e6;">
+        <div class="d-flex">
+            <div class="form-check">
+                <!-- input -->
+                <input class="form-check-input" type="radio" name="flexRadioDefault" id="recipickCard" /> 
+                <label class="form-check-label ms-2" for="recipickCard"></label>
+            </div>
+            <div>
+                <!-- title -->
+                <h5 class="mb-1 h6">레시픽 카드</h5>
+                <p class="mb-0 small">포인트 적립 혜택을 받아보세요.</p>
+            </div>
+        </div>
+    </div>
+</div>
 												<div class="card card-bordered shadow-none mb-2">
 													<!-- card body -->
 													<div class="card-body p-6">
@@ -1664,10 +1707,14 @@ body {
 	<div class="modal fade" id="recipickCardModal" tabindex="-1" aria-labelledby="recipickCardModalLabel" aria-hidden="true">
 	  <div class="modal-dialog">
 	    <div class="modal-content">
-	      <div class="modal-header" style="background-color: #9758d9; color: white;">
+	      <!-- <div class="modal-header" style="background-color: #9758d9; color: white;">
 	        <h5 class="modal-title" id="recipickCardModalLabel">레시픽 카드 결제</h5>
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-	      </div>
+	      </div> -->
+	      <div class="modal-header" style="background-color: #ff7f50; color: white;">
+    <h5 class="modal-title" id="recipickCardModalLabel">레시픽 카드 결제</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
 	      <div class="modal-body">
 	        <div id="recipickCardError" class="alert alert-danger d-none"></div>
 	        
@@ -1689,7 +1736,8 @@ body {
 	        </div>
 	        
 	        <!-- 포인트 사용 섹션 -->
-	        <div class="card p-3 mt-4 mb-3" style="background-color: #f7f2ff;">
+	        
+	        <div class="card p-3 mt-4 mb-3" style="background-color: #fff3e6;">
 	          <div class="d-flex justify-content-between align-items-center mb-2">
 	            <div class="form-check">
 	              <input class="form-check-input" type="checkbox" id="usePointsCheckbox">
@@ -1893,32 +1941,7 @@ body {
 	        $(this).addClass('active');
 	    });
 	    
-/* 	    // 로딩 표시 함수
-	    function showLoading() {
-	        // 로딩 인디케이터 표시 로직
-	        console.log("로딩 시작...");
-	    } */
 
-/* 	    function hideLoading() {
-	        // 로딩 인디케이터 숨김 로직
-	        console.log("로딩 종료...");
-	    } */
-	    
-	    
-/* 	    $('#paymentButton').on('click', function () {
-	        const isRecipickCardSelected = $('#recipickCard').is(':checked');
-	        const selectedDeliveryDate = $('#dateTabs .nav-link.active').data('date');
-	        
-	        if (isRecipickCardSelected) {
-	            // 레시픽 카드 결제 처리
-	            handleRecipickCardPayment(selectedDeliveryDate);
-	        } else {
-	            // 일반 결제 (아임포트)
-	            handleRegularPayment(selectedDeliveryDate);
-	        }
-	    });
- */	    
- 
 	 // 결제 버튼 클릭 이벤트
 	    $('#paymentButton').on('click', function () {
 	        const isRecipickCardSelected = $('#recipickCard').is(':checked');
@@ -2099,8 +2122,8 @@ body {
 	            }
 	        });
 	    }
-
-	    // 주문 생성 및 결제 완료 처리
+	    
+	    
 	    function createOrderAndFinish(orderData) {
 	        $.ajax({
 	            url: "${pageContext.request.contextPath}/checkout/success",
@@ -2108,15 +2131,22 @@ body {
 	            contentType: "application/json",
 	            data: JSON.stringify(orderData),
 	            success: function(response) {
+	                console.log('주문 성공 전체 응답:', response);
+	                
 	                if (response.success) {
-	                    // 주문 생성 성공 - 레시픽에서 주문 생성 완료된 상태
-	                    // order_id가 생성되었으므로 이제 솔픽에 포인트 반영 요청 가능
-	                    
+	                    // 주문 ID 확인
+	                    const orderId = response.orderId;
+	                    console.log('생성된 주문 ID:', orderId);
+
 	                    if (orderData.pointsUsed > 0) {
 	                        // 포인트 사용 내역 업데이트 (솔픽)
-	                        updatePointsUsage(response.orderId, orderData.pointsUsed, orderData.merchantUid, orderData.totalPrice);
+	                        updatePointsUsage(
+	                            orderId, 
+	                            orderData.pointsUsed, 
+	                            orderData.merchantUid, 
+	                            orderData.totalPrice
+	                        );
 	                    } else {
-	                        // 포인트 사용 없으면 바로 결제 완료 페이지로 이동
 	                        window.location.href = `${pageContext.request.contextPath}/checkout/payment-success?merchantUid=${orderData.merchantUid}`;
 	                    }
 	                } else {
@@ -2124,37 +2154,43 @@ body {
 	                }
 	            },
 	            error: function(xhr, status, error) {
-	                alert('서버와 통신 중 에러가 발생했습니다.');
 	                console.error('주문 생성 에러:', error);
+	                alert('서버와 통신 중 에러가 발생했습니다.');
 	            }
 	        });
 	    }
 
-	    // 포인트 사용 내역 업데이트 (솔픽)
-	    function updatePointsUsage(orderId, pointsUsed, merchantUid) {
+	    
+	    function updatePointsUsage(orderId, pointsUsed, merchantUid, totalPrice) {
+	        console.log('포인트 업데이트 요청 상세:', {
+	            orderId: orderId,
+	            pointsUsed: pointsUsed,
+	            merchantUid: merchantUid,
+	            totalPrice: totalPrice
+	        });
+
 	        $.ajax({
-	            url: "${pageContext.request.contextPath}/checkout/update-points", // 솔픽 포인트 업데이트 API
+	            url: "${pageContext.request.contextPath}/checkout/update-points",
 	            type: "POST",
 	            contentType: "application/json",
 	            data: JSON.stringify({
-	                apiKey: "your-api-key", // API 키 설정 필요
-	                recipickUserId: ${orderer.memberId},
 	                orderId: orderId,
 	                pointsUsed: pointsUsed,
 	                totalPrice: totalPrice
 	            }),
 	            success: function(response) {
-	                // 성공이든 실패든 결제 완료 페이지로 이동 (주문은 이미 생성됨)
+	                console.log('포인트 업데이트 응답:', response);
+	                // 기존 로직 유지
 	                window.location.href = `${pageContext.request.contextPath}/checkout/payment-success?merchantUid=${merchantUid}`;
 	            },
 	            error: function(xhr, status, error) {
 	                console.error('포인트 업데이트 에러:', error);
-	                // 오류가 있어도 결제 완료 페이지로 이동 (주문은 이미 생성됨)
-	                window.location.href = `${pageContext.request.contextPath}/checkout/payment-success?merchantUid=${merchantUid}`;
+	                console.error('응답 내용:', xhr.responseText);
+	                // 기존 로직 유지
 	            }
 	        });
 	    }
-	    
+	   
 	    // 일반 결제 처리 함수 (기존 코드 유지)
 	    function handleRegularPayment(selectedDeliveryDate) {
 	        const IMP = window.IMP; 

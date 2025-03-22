@@ -17,7 +17,7 @@
 		member_id = #{memberId};
 	</select>
 
-	<insert id="insertOrderHistory"
+	<!-- <insert id="insertOrderHistory"
 		parameterType="kr.co.recipick.checkout.OrderVO">
 		INSERT INTO order_history (
 		member_id,
@@ -47,8 +47,42 @@
 		#{address}
 		)
 	</insert>
+ -->
 
 
+<insert id="insertOrderHistory" 
+        parameterType="kr.co.recipick.checkout.OrderVO"
+        useGeneratedKeys="true"
+        keyProperty="oh_id"
+        keyColumn="oh_id">
+    INSERT INTO order_history (
+        member_id,
+        order_state,
+        delivery_status,
+        payment_method,
+        delivery_date,
+        order_date,
+        category,
+        title,
+        qty,
+        recipe_id,
+        ing_id,
+        address
+    ) VALUES (
+        #{memberId},
+        #{orderState},
+        #{deliveryStatus},
+        #{paymentMethod},
+        #{deliveryDate},
+        #{orderDate},
+        #{category},
+        #{title},
+        #{qty},
+        #{recipeId},
+        #{ingId},
+        #{address}
+    )
+</insert>
 
 
 

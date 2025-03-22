@@ -36,50 +36,95 @@ public class CheckoutServiceImpl implements CheckoutService {
 	@Autowired
 	private CartService cartService;
 
+//	@Override
+//	public int createOrder(OrderVO orderHistory, int check) {
+//		// 장바구니 데이터를 가져오는 로직 (필요 시 활용)
+//		List<CartVO> cartItems = cartService.getCartItems(orderHistory.getMemberId());
+//
+//		if (cartItems == null || cartItems.isEmpty()) {
+//			throw new IllegalArgumentException("장바구니가 비어 있습니다.");
+//		}
+//		
+//		int lastOrderId = 0;
+//
+//		for (CartVO cartItem : cartItems) {
+//
+//			if (cartItem.getCategory() == 1) {
+//				orderHistory.setCategory("r");
+//				orderHistory.setTitle(cartItem.getRcp_title());
+//
+//			} else {
+//				orderHistory.setCategory("i");
+//				orderHistory.setTitle(cartItem.getIng_name());
+//			}
+//			orderHistory.setQty(cartItem.getQty());
+//			orderHistory.setRecipeId(cartItem.getRecipe_id());
+//			orderHistory.setIngId(cartItem.getIng_id());
+//			// 프라이
+//			orderHistory.setAddress(orderHistory.getAddress()); // 서버에서 가져온 주소
+//
+//			checkoutMapper.insertOrderHistory(orderHistory);
+//			
+//			lastOrderId = orderHistory.getOh_id();
+//			
+//
+//			System.out.println();
+//			System.out.println(orderHistory);
+//			System.out.println();
+//
+//		}
+//
+//	if (check == 1) {
+//		cartMapper.deleteCartByMemberId(orderHistory.getMemberId());
+//	}
+//	
+//	return lastOrderId;
+//	
+//	}
+	
+	
+	
 	@Override
 	public int createOrder(OrderVO orderHistory, int check) {
-		// 장바구니 데이터를 가져오는 로직 (필요 시 활용)
-		List<CartVO> cartItems = cartService.getCartItems(orderHistory.getMemberId());
+	    List<CartVO> cartItems = cartService.getCartItems(orderHistory.getMemberId());
 
-		if (cartItems == null || cartItems.isEmpty()) {
-			throw new IllegalArgumentException("장바구니가 비어 있습니다.");
-		}
-		
-		int lastOrderId = 0;
+	    if (cartItems == null || cartItems.isEmpty()) {
+	        throw new IllegalArgumentException("장바구니가 비어 있습니다.");
+	    }
+	    
+	    int lastOrderId = 0;
 
-		for (CartVO cartItem : cartItems) {
+	    for (CartVO cartItem : cartItems) {
+	        // 첫 번째 아이템일 때만 주문 생성
+	        if (cartItem == cartItems.get(0)) {
+	            if (cartItem.getCategory() == 1) {
+	                orderHistory.setCategory("r");
+	                orderHistory.setTitle(cartItem.getRcp_title());
+	            } else {
+	                orderHistory.setCategory("i");
+	                orderHistory.setTitle(cartItem.getIng_name());
+	            }
+	            orderHistory.setQty(cartItem.getQty());
+	            orderHistory.setRecipeId(cartItem.getRecipe_id());
+	            orderHistory.setIngId(cartItem.getIng_id());
 
-			if (cartItem.getCategory() == 1) {
-				orderHistory.setCategory("r");
-				orderHistory.setTitle(cartItem.getRcp_title());
+	            // 주문 생성
+	            checkoutMapper.insertOrderHistory(orderHistory);
+	            
+	            // 생성된 주문 ID 저장
+	            lastOrderId = orderHistory.getOh_id();
+	            
+	            System.out.println("첫 번째 주문 생성 - OrderVO: " + orderHistory);
+	            System.out.println("생성된 주문 ID: " + lastOrderId);
+	        }
+	    }
 
-			} else {
-				orderHistory.setCategory("i");
-				orderHistory.setTitle(cartItem.getIng_name());
-			}
-			orderHistory.setQty(cartItem.getQty());
-			orderHistory.setRecipeId(cartItem.getRecipe_id());
-			orderHistory.setIngId(cartItem.getIng_id());
-			// 프라이
-			orderHistory.setAddress(orderHistory.getAddress()); // 서버에서 가져온 주소
-
-			checkoutMapper.insertOrderHistory(orderHistory);
-			
-			lastOrderId = orderHistory.getOh_id();
-			
-
-			System.out.println();
-			System.out.println(orderHistory);
-			System.out.println();
-
-		}
-
-	if (check == 1) {
-		cartMapper.deleteCartByMemberId(orderHistory.getMemberId());
-	}
-	
-	return lastOrderId;
-	
+	    // 장바구니 삭제 처리
+	    if (check == 1) {
+	        cartMapper.deleteCartByMemberId(orderHistory.getMemberId());
+	    }
+	    
+	    return lastOrderId;
 	}
 
 	@Override

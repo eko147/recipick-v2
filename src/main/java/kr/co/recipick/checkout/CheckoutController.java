@@ -88,58 +88,107 @@ public class CheckoutController {
 		return "checkout/payment-failed";
 	}
 
+//	@PostMapping("/checkout/success")
+//	@ResponseBody
+//	public Map<String, Object> handlePaymentSuccess(@RequestBody Map<String, Object> successData, HttpSession session) {
+//
+//		Map<String, Object> response = new HashMap<>();
+//
+//        MemberVO login = (MemberVO) session.getAttribute("login");
+//        Integer memberId = login.getMember_id();
+//
+//		try {
+//
+//			int totalPrice = (int) successData.get("totalPrice");
+//			String deliveryDate = (String) successData.get("deliveryDate");
+//			String orderDate = (String) successData.get("orderDate");
+//			String paymentMethod = (String) successData.get("paymentMethod");
+//			String orderStatus = (String) successData.get("orderStatus");
+////            String impUid = (String) successData.get("impUid");
+//			String address = (String) successData.get("address");
+//
+//			// 디테일 안씀??
+//			OrderVO orderHistory = new OrderVO();
+//			List<CartVO> cartItems = cartService.getCartItems(memberId);
+////            
+//			orderHistory.setMemberId(memberId);
+//			orderHistory.setOrderState(orderStatus);
+//			orderHistory.setDeliveryStatus("배송준비");
+//			orderHistory.setDeliveryDate(deliveryDate);
+//			orderHistory.setOrderDate(orderDate);
+//			orderHistory.setPaymentMethod(paymentMethod);
+//			orderHistory.setAddress(address);
+//
+//			System.out.println("Member ID: " + orderHistory.getMemberId());
+//			System.out.println("Order State: " + orderHistory.getOrderState());
+//			System.out.println("Delivery Status: " + orderHistory.getDeliveryStatus());
+//			System.out.println("Payment Method: " + orderHistory.getPaymentMethod());
+//			System.out.println("Delivery Date: " + orderHistory.getDeliveryDate());
+//			System.out.println("Order Date: " + orderHistory.getOrderDate());
+//			System.out.println("Address: " + orderHistory.getAddress());
+//
+//			int orderId = checkoutService.createOrder(orderHistory, 1);
+//
+//			response.put("success", true);
+//			response.put("message", "결제 성공 데이터가 처리되었습니다.");
+//			response.put("orderId", orderId);
+//			
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			response.put("success", false);
+//			response.put("message", "결제 성공 데이터 처리 중 오류가 발생했습니다.");
+//		}
+//		return response;
+//	}
+	
+	
 	@PostMapping("/checkout/success")
 	@ResponseBody
 	public Map<String, Object> handlePaymentSuccess(@RequestBody Map<String, Object> successData, HttpSession session) {
+	    Map<String, Object> response = new HashMap<>();
 
-		Map<String, Object> response = new HashMap<>();
+	    MemberVO login = (MemberVO) session.getAttribute("login");
+	    Integer memberId = login.getMember_id();
 
-        MemberVO login = (MemberVO) session.getAttribute("login");
-        Integer memberId = login.getMember_id();
+	    try {
+	        int totalPrice = (int) successData.get("totalPrice");
+	        String deliveryDate = (String) successData.get("deliveryDate");
+	        String orderDate = (String) successData.get("orderDate");
+	        String paymentMethod = (String) successData.get("paymentMethod");
+	        String orderStatus = (String) successData.get("orderStatus");
+	        String address = (String) successData.get("address");
 
-		try {
+	        OrderVO orderHistory = new OrderVO();
+	        List<CartVO> cartItems = cartService.getCartItems(memberId);
 
-			int totalPrice = (int) successData.get("totalPrice");
-			String deliveryDate = (String) successData.get("deliveryDate");
-			String orderDate = (String) successData.get("orderDate");
-			String paymentMethod = (String) successData.get("paymentMethod");
-			String orderStatus = (String) successData.get("orderStatus");
-//            String impUid = (String) successData.get("impUid");
-			String address = (String) successData.get("address");
+	        orderHistory.setMemberId(memberId);
+	        orderHistory.setOrderState(orderStatus);
+	        orderHistory.setDeliveryStatus("배송준비");
+	        orderHistory.setDeliveryDate(deliveryDate);
+	        orderHistory.setOrderDate(orderDate);
+	        orderHistory.setPaymentMethod(paymentMethod);
+	        orderHistory.setAddress(address);
 
-			// 디테일 안씀??
-			OrderVO orderHistory = new OrderVO();
-			List<CartVO> cartItems = cartService.getCartItems(memberId);
-//            
-			orderHistory.setMemberId(memberId);
-			orderHistory.setOrderState(orderStatus);
-			orderHistory.setDeliveryStatus("배송준비");
-			orderHistory.setDeliveryDate(deliveryDate);
-			orderHistory.setOrderDate(orderDate);
-			orderHistory.setPaymentMethod(paymentMethod);
-			orderHistory.setAddress(address);
+	        // 디버그 로그 추가
+	        System.out.println("주문 생성 전 OrderVO: " + orderHistory);
 
-			System.out.println("Member ID: " + orderHistory.getMemberId());
-			System.out.println("Order State: " + orderHistory.getOrderState());
-			System.out.println("Delivery Status: " + orderHistory.getDeliveryStatus());
-			System.out.println("Payment Method: " + orderHistory.getPaymentMethod());
-			System.out.println("Delivery Date: " + orderHistory.getDeliveryDate());
-			System.out.println("Order Date: " + orderHistory.getOrderDate());
-			System.out.println("Address: " + orderHistory.getAddress());
+	        int orderId = checkoutService.createOrder(orderHistory, 1);
 
-			int orderId = checkoutService.createOrder(orderHistory, 1);
+	        // 디버그 로그 추가
+	        System.out.println("생성된 주문 ID: " + orderId);
 
-			response.put("success", true);
-			response.put("message", "결제 성공 데이터가 처리되었습니다.");
-			response.put("orderId", orderId);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			response.put("success", false);
-			response.put("message", "결제 성공 데이터 처리 중 오류가 발생했습니다.");
-		}
-		return response;
+	        response.put("success", true);
+	        response.put("message", "결제 성공 데이터가 처리되었습니다.");
+	        response.put("orderId", orderId);  // 주문 ID 명시적으로 설정
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        response.put("success", false);
+	        response.put("message", "결제 성공 데이터 처리 중 오류가 발생했습니다.");
+	    }
+	    return response;
 	}
+	
 
 	@PostMapping("/checkout/failure")
 	@ResponseBody
@@ -257,11 +306,21 @@ public class CheckoutController {
 	    }
 	}
 	
+	
 	@PostMapping("/checkout/update-points")
 	@ResponseBody
 	public Map<String, Object> updatePoints(@RequestBody Map<String, Object> request, HttpSession session) {
 	    Map<String, Object> response = new HashMap<>();
 	    
+	    System.out.println("=====================================");
+	    System.out.println("포인트 업데이트 요청 상세 정보:");
+	    System.out.println("요청 전체 데이터: " + request);
+	    System.out.println("주문 ID 타입: " + (request.get("orderId") != null ? request.get("orderId").getClass() : "null"));
+	    System.out.println("주문 ID: " + request.get("orderId"));
+	    System.out.println("포인트 사용량: " + request.get("pointsUsed"));
+	    System.out.println("총 가격: " + request.get("totalPrice"));
+	    System.out.println("=====================================");
+	    	    
 	    try {
 	        MemberVO login = (MemberVO) session.getAttribute("login");
 	        if (login == null) {
