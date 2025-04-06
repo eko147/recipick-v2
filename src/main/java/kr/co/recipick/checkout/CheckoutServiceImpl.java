@@ -84,48 +84,111 @@ public class CheckoutServiceImpl implements CheckoutService {
 	
 	
 	
+//	@Override
+//	public int createOrder(OrderVO orderHistory, int check) {
+//	    List<CartVO> cartItems = cartService.getCartItems(orderHistory.getMemberId());
+//
+//	    if (cartItems == null || cartItems.isEmpty()) {
+//	        throw new IllegalArgumentException("장바구니가 비어 있습니다.");
+//	    }
+//	    
+//	    int lastOrderId = 0;
+//
+//	    for (CartVO cartItem : cartItems) {
+//	        // 첫 번째 아이템일 때만 주문 생성
+//	        if (cartItem == cartItems.get(0)) {
+//	            if (cartItem.getCategory() == 1) {
+//	                orderHistory.setCategory("r");
+//	                orderHistory.setTitle(cartItem.getRcp_title());
+//	            } else {
+//	                orderHistory.setCategory("i");
+//	                orderHistory.setTitle(cartItem.getIng_name());
+//	            }
+//	            orderHistory.setQty(cartItem.getQty());
+//	            orderHistory.setRecipeId(cartItem.getRecipe_id());
+//	            orderHistory.setIngId(cartItem.getIng_id());
+//
+//	            // 주문 생성
+//	            checkoutMapper.insertOrderHistory(orderHistory);
+//	            
+//	            // 생성된 주문 ID 저장
+//	            lastOrderId = orderHistory.getOh_id();
+//	            
+//	            System.out.println("첫 번째 주문 생성 - OrderVO: " + orderHistory);
+//	            System.out.println("생성된 주문 ID: " + lastOrderId);
+//	        }
+//	    }
+//
+//	    // 장바구니 삭제 처리
+//	    if (check == 1) {
+//	        cartMapper.deleteCartByMemberId(orderHistory.getMemberId());
+//	    }
+//	    
+//	    return lastOrderId;
+//	}
+	
+	
 	@Override
-	public int createOrder(OrderVO orderHistory, int check) {
-	    List<CartVO> cartItems = cartService.getCartItems(orderHistory.getMemberId());
+    public int createOrder(OrderVO orderHistory, int check) {
+        List<CartVO> cartItems = cartService.getCartItems(orderHistory.getMemberId());
 
-	    if (cartItems == null || cartItems.isEmpty()) {
-	        throw new IllegalArgumentException("장바구니가 비어 있습니다.");
-	    }
-	    
-	    int lastOrderId = 0;
+        if (cartItems == null || cartItems.isEmpty()) {
+            throw new IllegalArgumentException("장바구니가 비어 있습니다.");
+        }
+        
+        int lastOrderId = 0;
 
-	    for (CartVO cartItem : cartItems) {
-	        // 첫 번째 아이템일 때만 주문 생성
-	        if (cartItem == cartItems.get(0)) {
-	            if (cartItem.getCategory() == 1) {
-	                orderHistory.setCategory("r");
-	                orderHistory.setTitle(cartItem.getRcp_title());
-	            } else {
-	                orderHistory.setCategory("i");
-	                orderHistory.setTitle(cartItem.getIng_name());
-	            }
-	            orderHistory.setQty(cartItem.getQty());
-	            orderHistory.setRecipeId(cartItem.getRecipe_id());
-	            orderHistory.setIngId(cartItem.getIng_id());
+        for (CartVO cartItem : cartItems) {
+            // 각 카트 아이템마다 주문 생성
+            OrderVO itemOrder = new OrderVO();
+            
+            // 기존 주문 정보 복사
+            itemOrder.setMemberId(orderHistory.getMemberId());
+            itemOrder.setOrderState(orderHistory.getOrderState());
+            itemOrder.setDeliveryStatus(orderHistory.getDeliveryStatus());
+            itemOrder.setDeliveryDate(orderHistory.getDeliveryDate());
+            itemOrder.setOrderDate(orderHistory.getOrderDate());
+            itemOrder.setPaymentMethod(orderHistory.getPaymentMethod());
+            itemOrder.setAddress(orderHistory.getAddress());
+            itemOrder.setDiscount(orderHistory.getDiscount());
+            
+            // 카트 아이템 정보 설정
+            if (cartItem.getCategory() == 1) {
+                itemOrder.setCategory("r");
+                itemOrder.setTitle(cartItem.getRcp_title());
+                itemOrder.setRecipeId(cartItem.getRecipe_id());
+                itemOrder.setIngId(0); // 레시피는 식재료 ID 없음
+            } else {
+                itemOrder.setCategory("i");
+                itemOrder.setTitle(cartItem.getIng_name());
+                itemOrder.setRecipeId(0); // 식재료는 레시피 ID 없음
+                itemOrder.setIngId(cartItem.getIng_id());
+            }
+            
+            itemOrder.setQty(cartItem.getQty());
+            
+            // 가격 설정 (필요하다면)
+            if (cartItem.getCategory() == 1) {
+                itemOrder.setPrice(cartItem.getRcp_discount_price() * cartItem.getQty());
+            } else {
+                itemOrder.setPrice(cartItem.getIng_discount_price() * cartItem.getQty());
+            }
+            
+            // 주문 생성
+            checkoutMapper.insertOrderHistory(itemOrder);
+            
+            // 마지막 주문 ID 저장
+            lastOrderId = itemOrder.getOh_id();
+        }
 
-	            // 주문 생성
-	            checkoutMapper.insertOrderHistory(orderHistory);
-	            
-	            // 생성된 주문 ID 저장
-	            lastOrderId = orderHistory.getOh_id();
-	            
-	            System.out.println("첫 번째 주문 생성 - OrderVO: " + orderHistory);
-	            System.out.println("생성된 주문 ID: " + lastOrderId);
-	        }
-	    }
-
-	    // 장바구니 삭제 처리
-	    if (check == 1) {
-	        cartMapper.deleteCartByMemberId(orderHistory.getMemberId());
-	    }
-	    
-	    return lastOrderId;
-	}
+        // 장바구니 삭제 처리
+        if (check == 1) {
+            cartMapper.deleteCartByMemberId(orderHistory.getMemberId());
+        }
+        
+        return lastOrderId;
+    }
+	
 
 	@Override
 	public OrdererVO getOrdererInfo(int memberId) {

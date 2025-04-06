@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.recipick.api.refrigerator.IngredientApiMapper">
+    <select id="getIngredients" parameterType="int" resultType="kr.co.recipick.api.refrigerator.IngredientResponseVO">
+    SELECT 
+        	oh.oh_id AS ohId,
+            oh.member_id AS userId,
+            i.name,
+            i.emoji,
+            i.image,
+            (i.avg_gram * oh.qty) AS quantity,
+            DATE_FORMAT(DATE_ADD(oh.order_date, INTERVAL 7 DAY), '%Y-%m-%dT%H:%i:%S') AS expiryDate,
+            icg.ing_main AS mainCategory,
+            icg.ing_sub AS subCategory,
+            icg.ing_detail AS detailCategory
+        FROM 
+            order_history oh
+        JOIN 
+            ingredient i ON oh.ing_id = i.ing_id
+        JOIN 
+            ing_category_group icg ON i.ing_id = icg.ing_id
+        WHERE 
+            oh.member_id = #{userId}
+            AND oh.category = 'i'  <!-- 식재료 주문만 -->
+            AND oh.order_state = '결제완료'  <!-- 완료된 주문만 -->
+            <!-- AND oh.order_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)  -->
+        ORDER BY 
+            oh.oh_id DESC
+            </select> 
+    
+    
+</mapper>

@@ -82,20 +82,38 @@ public class CartServiceImpl implements CartService {
 	}
 
 	
+//	@Override
+//	public void addIngToCart(int memberId, int id, int qty) { 
+//		Integer cartId = cartMapper.findItem(memberId, id, 0);
+//		
+//		if (cartId != null) {
+//				cartMapper.updateCartItemQty(cartId, qty);
+//		} else {
+//			CartVO cartItem = new CartVO();
+//			cartItem.setMember_id(memberId);
+//			cartItem.setIng_id(id);
+//			cartItem.setCategory(0); 
+//			cartItem.setQty(qty);
+//			cartMapper.insertCartItem(cartItem);
+//		}
+//	}
 	@Override
 	public void addIngToCart(int memberId, int id, int qty) { 
-		Integer cartId = cartMapper.findItem(memberId, id, 0);
-		
-		if (cartId != null) {
-				cartMapper.updateCartItemQty(cartId, qty);
-		} else {
-			CartVO cartItem = new CartVO();
-			cartItem.setMember_id(memberId);
-			cartItem.setIng_id(id);
-			cartItem.setCategory(0); 
-			cartItem.setQty(qty);
-			cartMapper.insertCartItem(cartItem);
-		}
+	    Integer cartId = cartMapper.findItem(memberId, id, 0);
+	    
+	    if (cartId != null) {
+	        // 기존 수량을 조회하고 새로운 수량과 합산
+	        Integer existingQty = cartMapper.findQty(cartId);
+	        int newQty = existingQty + qty;
+	        cartMapper.updateCartItemQty(cartId, newQty);
+	    } else {
+	        CartVO cartItem = new CartVO();
+	        cartItem.setMember_id(memberId);
+	        cartItem.setIng_id(id);
+	        cartItem.setCategory(0); 
+	        cartItem.setQty(qty);
+	        cartMapper.insertCartItem(cartItem);
+	    }
 	}
 	
 	@Override
